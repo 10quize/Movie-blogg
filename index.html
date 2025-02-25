@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f0f2f5;
+            margin: 0;
+        }
+
+        .quiz-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .timer {
+            font-size: 24px;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+
+        .question {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .options {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            cursor: pointer;
+            background: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover {
+            background: #3498db;
+            color: white;
+        }
+
+        .disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .score-card {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+
+        .reward-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            text-align: center;
+            display: none;
+        }
+
+        .share-btn {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="timer">Time Left: 1:00</div>
+        <div class="question"></div>
+        <div class="options"></div>
+        <div class="score-card"></div>
+    </div>
+
+    <div class="reward-popup">
+        <h2>Congratulations! 🎉</h2>
+        <p>You won! Claim your reward!</p>
+        <a href="YOUR_REWARD_LINK_HERE" class="share-btn">Claim Reward</a>
+    </div>
+
+    <audio id="correctSound" src="https://actions.google.com/sounds/v1/cartoon/clang.ogg"></audio>
+    <audio id="wrongSound" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg"></audio>
+    <audio id="rewardSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+
+    <script>
+        const questions = [
+            { question: "1 answer here", options: ["A", "B", "C", "D"], answer: 0 },           
+            { question: "2 answer here", options: ["A", "B", "C", "D"], answer: 0 },            
+            { question: "3 answer here", options: ["A", "B", "C", "D"], answer: 0 },     
+            { question: "4 answer here", options: ["A", "B", "C", "D"], answer: 0 },           
+            { question: "5 answer here", options: ["A", "B", "C", "D"], answer: 0 },  
+            { question: "6 answer here", options: ["A", "B", "C", "D"], answer: 0 },            
+            { question: "7 answer here", options: ["A", "B", "C", "D"], answer: 0 },          
+            { question: "8 answer here", options: ["A", "B", "C", "D"], answer: 0 },            
+            { question: "9 answer here", options: ["A", "B", "C", "D"], answer: 0 },            
+            { question: "10 answer here", options: ["A", "B", "C", "D"], answer: 0 },            
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let timeLeft = 60;
+        let timer;
+
+        function startQuiz() {
+            showQuestion();
+            startTimer();
+        }
+
+        function showQuestion() {
+            if (currentQuestion >= questions.length) {
+                endQuiz();
+                return;
+            }
+
+            const questionEl = document.querySelector(".question");
+            const optionsEl = document.querySelector(".options");
+
+            questionEl.textContent = questions[currentQuestion].question;
+            optionsEl.innerHTML = "";
+
+            questions[currentQuestion].options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.textContent = option;
+                button.onclick = () => checkAnswer(index);
+                optionsEl.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedIndex) {
+            const options = document.querySelectorAll(".option-btn");
+            options.forEach(option => option.classList.add("disabled"));
+
+            const correctIndex = questions[currentQuestion].answer;
+
+            if (selectedIndex === correctIndex) {
+                document.getElementById("correctSound").play();
+                options[selectedIndex].style.background = "#2ecc71";
+                score++;
+            } else {
+                document.getElementById("wrongSound").play();
+                options[selectedIndex].style.background = "#e74c3c";
+                options[correctIndex].style.background = "#2ecc71";
+            }
+
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    showQuestion();
+                } else {
+                    endQuiz();
+                }
+            }, 1500);
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                document.querySelector(".timer").textContent = `Time Left: ${timeLeft}s`;
+
+                if (timeLeft <= 0) {
+                    endQuiz();
+                }
+            }, 1000);
+        }
+
+        function endQuiz() {
+            clearInterval(timer);
+            document.querySelector(".quiz-container").innerHTML = `
+                <div class="score-card">
+                    Your Score: ${score}/${questions.length}
+                    ${score === questions.length ? '<p>Perfect Score! 🎉</p>' : ''}
+                    <button class="share-btn" onclick="shareScore()">Share Score</button>
+                </div>
+            `;
+
+            if (score === questions.length) {
+                document.getElementById("rewardSound").play();
+                document.querySelector(".reward-popup").style.display = "block";
+            }
+        }
+
+        function shareScore() {
+            alert(`I scored ${score}/${questions.length}!`);
+        }
+
+        startQuiz();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f0f2f5;
+            margin: 0;
+        }
+
+        .quiz-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .timer {
+            font-size: 24px;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+
+        .question {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .options {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            cursor: pointer;
+            background: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover {
+            background: #3498db;
+            color: white;
+        }
+
+        .disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .score-card {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+
+        .reward-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            text-align: center;
+            display: none;
+        }
+
+        .share-btn {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="timer">Time Left: 1:00</div>
+        <div class="question"></div>
+        <div class="options"></div>
+        <div class="score-card"></div>
+    </div>
+
+    <div class="reward-popup">
+        <h2>Congratulations! 🎉</h2>
+        <p>You won! Claim your reward!</p>
+        <a href="YOUR_REWARD_LINK_HERE" class="share-btn">Claim Reward</a>
+    </div>
+
+    <audio id="correctSound" src="https://actions.google.com/sounds/v1/cartoon/clang.ogg"></audio>
+    <audio id="wrongSound" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg"></audio>
+    <audio id="rewardSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+
+    <script>
+        const questions = [
+            { question: "1 answer here", options: ["A", "B", "C", "D"], answer: 0 },           
+            { question: "2 answer here", options: ["A", "B", "C", "D"], answer: 1 },            
+            { question: "3 answer here", options: ["A", "B", "C", "D"], answer: 2 },     
+            { question: "4 answer here", options: ["A", "B", "C", "D"], answer: 3 },           
+            { question: "5 answer here", options: ["A", "B", "C", "D"], answer: 0 },  
+            { question: "6 answer here", options: ["A", "B", "C", "D"], answer: 1 },            
+            { question: "7 answer here", options: ["A", "B", "C", "D"], answer: 2 },          
+            { question: "8 answer here", options: ["A", "B", "C", "D"], answer: 3 },            
+            { question: "9 answer here", options: ["A", "B", "C", "D"], answer: 0 },            
+            { question: "10 answer here", options: ["A", "B", "C", "D"], answer: 1 },            
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let timeLeft = 60;
+        let timer;
+
+        function startQuiz() {
+            showQuestion();
+            startTimer();
+        }
+
+        function showQuestion() {
+            if (currentQuestion >= questions.length) {
+                endQuiz();
+                return;
+            }
+
+            const questionEl = document.querySelector(".question");
+            const optionsEl = document.querySelector(".options");
+
+            questionEl.textContent = questions[currentQuestion].question;
+            optionsEl.innerHTML = "";
+
+            questions[currentQuestion].options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.textContent = option;
+                button.onclick = () => checkAnswer(index);
+                optionsEl.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedIndex) {
+            const options = document.querySelectorAll(".option-btn");
+            options.forEach(option => option.classList.add("disabled"));
+
+            const correctIndex = questions[currentQuestion].answer;
+
+            if (selectedIndex === correctIndex) {
+                document.getElementById("correctSound").play();
+                options[selectedIndex].style.background = "#2ecc71";
+                score++;
+            } else {
+                document.getElementById("wrongSound").play();
+                options[selectedIndex].style.background = "#e74c3c";
+                options[correctIndex].style.background = "#2ecc71";
+            }
+
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    showQuestion();
+                } else {
+                    endQuiz();
+                }
+            }, 1500);
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                document.querySelector(".timer").textContent = `Time Left: ${timeLeft}s`;
+
+                if (timeLeft <= 0) {
+                    endQuiz();
+                }
+            }, 1000);
+        }
+
+        function endQuiz() {
+            clearInterval(timer);
+            document.querySelector(".quiz-container").innerHTML = `
+                <div class="score-card">
+                    Your Score: ${score}/${questions.length}
+                    ${score === questions.length ? '<p>Perfect Score! 🎉</p>' : ''}
+                    <button class="share-btn" onclick="shareScore()">Share Score</button>
+                </div>
+            `;
+
+            if (score === questions.length) {
+                document.getElementById("rewardSound").play();
+                document.querySelector(".reward-popup").style.display = "block";
+            }
+        }
+
+        function shareScore() {
+            alert(`I scored ${score}/${questions.length}!`);
+        }
+
+        startQuiz();
+    </script>
+</body>
+</html>
+    
