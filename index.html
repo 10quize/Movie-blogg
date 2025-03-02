@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -226,13 +225,24 @@
             <!-- Add more video cards -->
         </div>
     </main>
+    
 
     <!-- Quiz Section -->
     <section class="quiz-section">
-        <h2>Test Your Movie Knowledge!</h2>
-        <button class="quiz-btn" onclick="location.href='/Movie-blogg/index1.html'">Start Quiz</button>
-        
-    </section>
+    <script>
+        function openLinks() {
+            // First, open the ad link in a new tab
+            window.open('https://www.effectiveratecpm.com/hhmv0r52kf?key=eaa670e6bc55efc11a583cdcca44fb3b', '_blank');
+
+            // Then, redirect to the main link after 3 seconds
+            setTimeout(function() {
+                window.location.href = '/Movei-blogg/index1.html';
+            }, 3000);
+        }
+    </script>
+    <button class="quiz-btn" onclick="openLinks()">Start quiz</button>
+   </section>
+
 
     <!-- Footer -->
     <footer id="contact">
@@ -262,5 +272,8 @@
 
 
 
+   
 
-    
+                        
+
+                        
